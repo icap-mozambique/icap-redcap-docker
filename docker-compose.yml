@@ -1,0 +1,42 @@
+version: '3.2'
+services:
+    vmmc-web:
+        build:
+            context: ./apache
+        container_name: vmmc-web
+        ports:
+            - "80:80"
+            - "443:443"
+        networks: 
+            - network
+        volumes:
+            - type: bind
+              source: /opt/vmmc/data
+              target: /usr/local/apache2/htdocs
+            - type: bind
+              source: /etc/letsencrypt/live
+              target: /etc/letsencrypt/live
+        depends_on:
+            - "vmmc-db"
+        restart: unless-stopped
+
+    vmmc-db:
+        build: 
+            context: ./database
+        container_name: vmmc-db
+        ports: 
+            - "3306:3306"
+        networks: 
+            - network
+        volumes:
+            - type: volume
+              source: dbdata
+              target: /opt/vmmc/data
+        restart: unless-stopped
+
+networks: 
+  network:
+    driver: bridge
+
+volumes:
+  dbdata:
